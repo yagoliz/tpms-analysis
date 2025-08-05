@@ -1,0 +1,50 @@
+\documentclass[nonacm,sigconf]{acmart}
+\usepackage{amsmath}
+\usepackage[linesnumbered,lined,boxed,commentsnumbered,ruled]{algorithm2e}
+
+\begin{document}
+
+\begin{algorithm}[H]
+\caption{Car Matching Algorithm}
+\DontPrintSemicolon
+\KwData{$C;\, M;\, N;\, \theta_0;\, \theta_l;\, \theta_k$ \tcp*{Car Matrix, $M$ time points, $N$ IDs, Thresholds}}
+\KwResult{$D$ \tcp*{Matched cars}}
+$S \gets \mathbf{0_{N\times N}};\, D,D^{aux} \gets \emptyset;\, \theta \gets \theta_0$\tcp*{Scoring matrix, Initial threshold}
+\For(\tcp*[f]{Calculate scores of all IDs}){$i\gets 0$ \KwTo $N-1$}{
+    \For{$j\gets 1$ \KwTo $N$}{
+        $S_{ij} \gets \texttt{Score}(C_i,C_j)$ \tcp*{Score: Xcorr or Jaccard}
+    }
+}
+
+\While{$\theta > \theta_l$ \KwSty{and} $S \neq \emptyset$}{
+    \For{$R$ \KwSty{in} $\texttt{Rows}(S)$}{
+        $R_j \gets IDs$ \KwSty{where} $R > \theta$\\
+        \uIf{\texttt{Length}$(R_j) > 1$ \KwSty{and} \texttt{Length}$(R_j) \leq 3$}{
+            $k \gets$ \texttt{FindAny}$(D^{aux},R_j)$\\
+            \uIf{$k$ \KwSty{is} $\emptyset$}{
+                \texttt{Append}$(D^{aux},R_j)$
+            }
+            \Else{
+                \texttt{UpdateDRowk}$(D^{aux}_k,R_j)$\\
+                \If{\texttt{Length}$(D^{aux}_k) = 4$}{
+                    \texttt{UpdateDS}$(D^{aux}_k,D,S)$
+                    \texttt{RemoveKRow}$(D^{aux},k)$
+                }
+            }
+        } 
+        \ElseIf{\texttt{Length}$(R_j) \geq 4$}{
+            \texttt{UpdateDS}$(R_j,D,S)$
+        }
+    }
+    $\theta \gets \theta - \theta_k;\, D^{aux} \gets \emptyset$
+}
+\SetKwFunction{FMain}{UpdateDS}
+\SetKwProg{Fn}{Function}{:}{}
+\Fn{\FMain{$R_j$, $D$, $S$}}{
+      \texttt{Sort}$(R_j)$\\
+      \texttt{Append}$(D,R_j[1\rightarrow 4])$\\
+      \texttt{Remove}$(S,R_j[1\rightarrow 4])$ \tcp*{Remove IDs in rows and columns}
+}
+\end{algorithm}
+
+\end{document}
